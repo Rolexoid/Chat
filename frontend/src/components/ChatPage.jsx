@@ -1,32 +1,29 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import React, { useEffect, useState } from 'react';
+import { useGetChannelsQuery } from '../services/channelsApi';
 
-const getAuthHeader = () => {
+/* const getAuthHeader = () => {
   const userId = JSON.parse(localStorage.getItem('userId'));
+  console.log(userId);
 
   if (userId && userId.token) {
     return { Authorization: `Bearer ${userId.token}` };
   }
 
   return {};
-};
+}; */
 
 const ChatPage = () => {
-  const [channels, setChannels] = useState([]);
-  useEffect(() => {
-    async function fetchData() {
-      const { data } = await axios.get('/api/v1/channels', { headers: getAuthHeader() });
-      setChannels(data);
-    }
-    fetchData();
-  }, []);
+  const { data: channels, error: channelsError } = useGetChannelsQuery();
+  // const res = await axios.get('/api/v1/channels', { headers: getAuthHeader() });
+  console.log(channels, channelsError);
 
   return (
-    <div>
+    <ul>
       {channels.map((channel) => (
-        <div key={channel.id}>{channel.name}</div>
+        <li key={channel.id}>{channel.name}</li>
       ))}
-    </div>
+    </ul>
   );
 };
 

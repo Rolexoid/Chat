@@ -7,10 +7,12 @@ import { useFormik } from 'formik';
 import { Button, FloatingLabel, Form } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { logIn } from '../slices/authorizationSlice';
+import { useLoginUserMutation } from '../services/usersApi';
 import logInImage from './logInImage.png';
 
 const LoginPage = () => {
   const [authFailed, setAuthFailed] = useState(false);
+  const [loginUser, { isLoading }] = useLoginUserMutation();
   const inputRef = useRef();
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ const LoginPage = () => {
     onSubmit: async ({ username, password }) => {
       try {
         setAuthFailed(false);
-        const { data } = await axios.post('/api/v1/login', { username, password });
+        const { data } = await loginUser({ username, password });
         localStorage.setItem('userId', JSON.stringify(data));
         dispatch(logIn(data));
         const { from } = location.state;
@@ -92,7 +94,12 @@ const LoginPage = () => {
                       Неверные имя пользователя или пароль
                     </Form.Control.Feedback>
                   </FloatingLabel>
-                  <Button variant='outline-primary' type='submit' className='w-100 mb-3'>
+                  <Button
+                    variant='outline-primary'
+                    type='submit'
+                    className='w-100 mb-3'
+                    disabled={isLoading}
+                  >
                     Войти
                   </Button>
                 </Form>

@@ -7,11 +7,12 @@ import { useSelector } from 'react-redux';
 import Page404 from './components/Page404';
 import LoginPage from './components/LoginPage';
 import ChatPage from './components/ChatPage';
+import { ROUTES } from './routes';
 
 const PrivateRoute = ({ children }) => {
   const location = useLocation();
 
-  return useSelector((state) => state.authorizationReducer.loggedIn) ? (
+  return useSelector((state) => state.users.loggedIn) ? (
     children
   ) : (
     <Navigate to='/login' state={{ from: location }} />
@@ -22,14 +23,14 @@ const App = () => (
   <BrowserRouter>
     <Routes>
       <Route
-        path='/'
+        path={ROUTES.home}
         element={
           <PrivateRoute>
             <ChatPage />
           </PrivateRoute>
         }
       />
-      <Route path='/login' element={<LoginPage />} />
+      <Route path={ROUTES.login} element={<LoginPage />} />
       <Route path='*' element={<Page404 />} />
     </Routes>
   </BrowserRouter>

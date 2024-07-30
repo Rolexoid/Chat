@@ -8,7 +8,7 @@ const initialState = {
 };
 
 const authorizationSlice = createSlice({
-  name: 'authorization',
+  name: 'users',
   initialState,
   reducers: {
     logIn(state, { payload }) {
