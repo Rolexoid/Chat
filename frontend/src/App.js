@@ -3,20 +3,25 @@
 /* eslint-disable jsx-quotes */
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import Page404 from './components/Page404';
-import LoginPage from './components/LoginPage';
-import ChatPage from './components/ChatPage';
+// import { useSelector } from 'react-redux';
+import Page404 from './pages/Page404';
+import LoginPage from './pages/LoginPage';
+import ChatPage from './pages/ChatPage';
 import { ROUTES } from './routes';
 
 const PrivateRoute = ({ children }) => {
   const location = useLocation();
-
-  return useSelector((state) => state.users.loggedIn) ? (
+  return localStorage.getItem('userId') ? (
     children
   ) : (
     <Navigate to='/login' state={{ from: location }} />
   );
+
+  /* return useSelector((state) => state.users.loggedIn) ? (
+    children
+  ) : (
+    <Navigate to='/login' state={{ from: location }} />
+  ); */
 };
 
 const App = () => (

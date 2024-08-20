@@ -1,10 +1,12 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialData = JSON.parse(localStorage.getItem('userId'));
+
 const initialState = {
-  user: {},
+  username: initialData.username || null,
   loggedIn: false,
-  token: null,
+  token: initialData.token || null,
 };
 
 const authorizationSlice = createSlice({
@@ -12,7 +14,7 @@ const authorizationSlice = createSlice({
   initialState,
   reducers: {
     logIn(state, { payload }) {
-      state.user = payload.username;
+      state.username = payload.username;
       state.loggedIn = true;
       state.token = payload.token;
     },

@@ -9,5 +9,5 @@ export const ROUTES_API = {
   login: '/login',
   signUp: '/signUp',
   channels: '/channels',
-  messages: '/messgaes',
+  messages: '/messages',
 };
