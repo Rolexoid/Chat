@@ -2,15 +2,23 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { useGetMessagesQuery, useAddMessageMutation } from '../services/messagesApi';
+import socket from '../utils/socket';
 
 const MessageForm = (props) => {
   const { activeChannel } = props;
   const { data: messages, refetch } = useGetMessagesQuery();
   const [addMessage] = useAddMessageMutation();
   const inputRef = useRef();
+
   useEffect(() => {
     inputRef.current.focus();
   }, []);
+
+  useEffect(() => {
+    socket.on('newMessage', () => {
+      refetch();
+    });
+  }, [refetch]);
 
   const activeMessages = messages?.filter(({ channelId }) => channelId === activeChannel.id) || [];
   const { username } = useSelector((state) => state.users);
@@ -25,7 +33,6 @@ const MessageForm = (props) => {
     e.preventDefault();
     const newMessage = { body: value, channelId: activeChannel.id, username };
     addMessage(newMessage);
-    refetch();
     setValue('');
   };
 

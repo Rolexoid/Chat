@@ -1,3 +1,4 @@
+/* eslint-disable arrow-body-style */
 /* eslint-disable react/jsx-wrap-multilines */
 /* eslint-disable object-curly-newline */
 /* eslint-disable jsx-quotes */
@@ -8,6 +9,7 @@ import Page404 from './pages/Page404';
 import LoginPage from './pages/LoginPage';
 import ChatPage from './pages/ChatPage';
 import { ROUTES } from './routes';
+import SignUpPage from './pages/SignUpPage';
 
 const PrivateRoute = ({ children }) => {
   const location = useLocation();
@@ -24,21 +26,24 @@ const PrivateRoute = ({ children }) => {
   ); */
 };
 
-const App = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route
-        path={ROUTES.home}
-        element={
-          <PrivateRoute>
-            <ChatPage />
-          </PrivateRoute>
-        }
-      />
-      <Route path={ROUTES.login} element={<LoginPage />} />
-      <Route path='*' element={<Page404 />} />
-    </Routes>
-  </BrowserRouter>
-);
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path={ROUTES.home}
+          element={
+            <PrivateRoute>
+              <ChatPage />
+            </PrivateRoute>
+          }
+        />
+        <Route path={ROUTES.login} element={<LoginPage />} />
+        <Route path={ROUTES.signUp} element={<SignUpPage />} />
+        <Route path='*' element={<Page404 />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 export default App;
