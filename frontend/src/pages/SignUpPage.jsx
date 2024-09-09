@@ -71,13 +71,12 @@ const SignUpPage = () => {
                     }) => (
                       <Form className='w-50' onSubmit={handleSubmit}>
                         <h1 className='text-center mb-4'>{t('signup.title')}</h1>
-                        <FloatingLabel label={t('signup.username')} className='mb-3'>
+                        <FloatingLabel label={t('signup.username')} className='mb-3' controlId='username'>
                           <Form.Control
                             name='username'
                             autoComplete='username'
                             type='text'
                             required
-                            id='username'
                             placeholder={t('signup.username')}
                             onChange={handleChange}
                             value={values.username}
@@ -88,13 +87,12 @@ const SignUpPage = () => {
                             {errors.username}
                           </Form.Control.Feedback>
                         </FloatingLabel>
-                        <FloatingLabel label={t('signup.password')} className='mb-3'>
+                        <FloatingLabel label={t('signup.password')} className='mb-3' controlId='password'>
                           <Form.Control
                             name='password'
                             autoComplete='new-password'
                             type='password'
                             required
-                            id='password'
                             className='form-control'
                             placeholder={t('signup.password')}
                             value={values.password}
@@ -105,13 +103,12 @@ const SignUpPage = () => {
                             {errors.password}
                           </Form.Control.Feedback>
                         </FloatingLabel>
-                        <FloatingLabel label={t('signup.confirm')} className='mb-4'>
+                        <FloatingLabel label={t('signup.confirm')} className='mb-4' controlId='confirmPassword'>
                           <Form.Control
                             name='confirmPassword'
                             autoComplete='new-password'
                             type='password'
                             required
-                            id='confirmPassword'
                             className='form-control'
                             placeholder={t('signup.confirm')}
                             value={values.confirmPassword}

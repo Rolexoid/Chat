@@ -61,13 +61,12 @@ const LoginPage = () => {
                     }) => (
                       <Form className='col-12 col-md-6 mt-3 mt-mb-0' onSubmit={handleSubmit}>
                         <h1 className='text-center mb-4'>{t('login.title')}</h1>
-                        <FloatingLabel label={t('login.username')} className='mb-3'>
+                        <FloatingLabel label={t('login.username')} className='mb-3' controlId='username'>
                           <Form.Control
                             name='username'
                             autoComplete='username'
                             type='text'
                             required
-                            id='username'
                             placeholder={t('login.username')}
                             onChange={handleChange}
                             value={values.username}
@@ -75,13 +74,12 @@ const LoginPage = () => {
                             ref={inputRef}
                           />
                         </FloatingLabel>
-                        <FloatingLabel label={t('login.password')} className='mb-4'>
+                        <FloatingLabel label={t('login.password')} className='mb-4' controlId='password'>
                           <Form.Control
                             name='password'
                             autoComplete='current-password'
                             type='password'
                             required
-                            id='password'
                             className='form-control'
                             placeholder={t('login.password')}
                             value={values.password}
