@@ -69,7 +69,7 @@ const SignUpPage = () => {
                     {({
                       handleSubmit, handleChange, values, errors,
                     }) => (
-                      <Form noValidate className='w-50' onSubmit={handleSubmit}>
+                      <Form className='w-50' onSubmit={handleSubmit}>
                         <h1 className='text-center mb-4'>{t('signup.title')}</h1>
                         <FloatingLabel label={t('signup.username')} className='mb-3'>
                           <Form.Control
