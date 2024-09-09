@@ -75,9 +75,10 @@ const ChannelsForm = () => {
   }
 
   const setClasses = (cur) => {
-    const channelClasses = cn('w-100', 'rounded-0', 'text-start', 'btn', {
-      'btn-secondary': cur.id === activeChannelId,
+    const channelClasses = cn('w-100', 'rounded-0', 'text-start', {
       'text-truncate': cur.removable,
+      btn: true,
+      'btn-secondary': cur.id === activeChannelId,
     });
     return channelClasses;
   };
