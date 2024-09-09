@@ -1,7 +1,7 @@
 {
   "name": "@hexlet/code",
   "version": "1.0.0",
-  "description": "[![Actions Status](https://github.com/Rolex55/frontend-project-12/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Rolex55/frontend-project-12/actions)",
+  "description": "this project is a chat where you can communicate with oter people. Registered users can create and manage chat channels",
   "main": "index.js",
   "scripts": {
     "build": "npm run build --prefix frontend",
