@@ -2,32 +2,42 @@ import React from 'react';
 import {
   Modal, Button,
 } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { useRemoveChannelMutation } from '../../services/channelsApi';
 
 const Remove = (props) => {
   const { onHide, modalInfo } = props;
   const [removeChannel] = useRemoveChannelMutation();
+  const { t } = useTranslation();
   const currId = modalInfo.item.id;
+
+  const onSubmit = async () => {
+    try {
+      await removeChannel(currId);
+      onHide();
+      toast.success(t('toastify.remove'));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <Modal show centered>
       <Modal.Header closeButton onHide={onHide}>
-        <Modal.Title>Удалить канал</Modal.Title>
+        <Modal.Title>{t('modals.removeChannel')}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <p className="lead">Уверены?</p>
+        <p className="lead">{t('modals.areYouSure')}</p>
         <div className="d-flex justify-content-end">
-          <Button type="button" variant="secondary" className="me-2" onClick={() => onHide()}>Отменить</Button>
+          <Button type="button" variant="secondary" className="me-2" onClick={() => onHide()}>{t('modals.cancel')}</Button>
           <Button
             type="button"
             variant="danger"
-            onClick={() => {
-              removeChannel(currId);
-              onHide();
-            }}
+            onClick={() => onSubmit()}
           >
-            Удалить
+            {t('modals.delete')}
           </Button>
         </div>
       </Modal.Body>

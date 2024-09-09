@@ -1,28 +1,23 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable jsx-quotes */
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Formik } from 'formik';
 import { Button, FloatingLabel, Form } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
-import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import logInImage from './logInImage.png';
 import { logIn } from '../slices/authorizationSlice';
 import { useSignupUserMutation } from '../services/usersApi';
-
-const schema = yup.object().shape({
-  username: yup.string().min(3, 'От 3 до 20 символов').max(20).required('Обязательное поле'),
-  password: yup.string().min(6, 'Не менее 6 символов').required('Обязательное поле'),
-  confirmPassword: yup.string().oneOf([yup.ref('password')], 'Пароли должны совпадать'),
-});
+import { signUpShema } from '../utils/shema';
 
 const SignUpPage = () => {
-  const [authFailed, setAuthFailed] = useState(false);
+  const [existingUser, setExistingUser] = useState(false);
   const inputRef = useRef();
-  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [signUpUser, { isLoading }] = useSignupUserMutation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     inputRef.current.focus();
@@ -30,24 +25,21 @@ const SignUpPage = () => {
 
   const onSubmit = async ({ username, password }) => {
     try {
-      setAuthFailed(false);
-      const response = await signUpUser({ username, password });
-      const { data } = response;
+      const data = await signUpUser({ username, password }).unwrap();
       localStorage.setItem('userId', JSON.stringify(data));
       dispatch(logIn(data));
       navigate('/');
     } catch (err) {
-      if (err.isAxiosError && err.response.status === 401) {
-        setAuthFailed(true);
+      if (err.status === 401) {
         inputRef.current.select();
         return;
       }
-      if (err.response.status === 409) {
-        console.log('user exists yet');
-        setAuthFailed(true);
+      if (err.status === 409) {
+        setExistingUser(true);
         return;
       }
-      throw err;
+      toast.error(t('errors.server'));
+      console.error(err);
     }
   };
 
@@ -70,33 +62,33 @@ const SignUpPage = () => {
                     <img src={logInImage} alt='Регистрация' />
                   </div>
                   <Formik
-                    validationSchema={schema}
+                    validationSchema={signUpShema(t)}
                     onSubmit={onSubmit}
                     initialValues={{ username: '', password: '', confirmPassword: '' }}
                   >
                     {({
-                      handleSubmit, handleChange, values, touched, errors,
+                      handleSubmit, handleChange, values, errors,
                     }) => (
                       <Form noValidate className='w-50' onSubmit={handleSubmit}>
-                        <h1 className='text-center mb-4'>Регистрация</h1>
-                        <FloatingLabel label='Имя пользователя' className='mb-3'>
+                        <h1 className='text-center mb-4'>{t('signup.title')}</h1>
+                        <FloatingLabel label={t('signup.username')} className='mb-3'>
                           <Form.Control
                             name='username'
                             autoComplete='username'
                             type='text'
                             required
                             id='username'
-                            placeholder='Имя пользователя'
+                            placeholder={t('signup.username')}
                             onChange={handleChange}
                             value={values.username}
-                            isInvalid={errors.username}
+                            isInvalid={errors.username || existingUser}
                             ref={inputRef}
                           />
                           <Form.Control.Feedback type='invalid'>
                             {errors.username}
                           </Form.Control.Feedback>
                         </FloatingLabel>
-                        <FloatingLabel label='Пароль' className='mb-3'>
+                        <FloatingLabel label={t('signup.password')} className='mb-3'>
                           <Form.Control
                             name='password'
                             autoComplete='new-password'
@@ -104,16 +96,16 @@ const SignUpPage = () => {
                             required
                             id='password'
                             className='form-control'
-                            placeholder='Пароль'
+                            placeholder={t('signup.password')}
                             value={values.password}
                             onChange={handleChange}
-                            isInvalid={errors.password}
+                            isInvalid={errors.password || existingUser}
                           />
                           <Form.Control.Feedback type='invalid'>
                             {errors.password}
                           </Form.Control.Feedback>
                         </FloatingLabel>
-                        <FloatingLabel label='Подтвердите пароль' className='mb-4'>
+                        <FloatingLabel label={t('signup.confirm')} className='mb-4'>
                           <Form.Control
                             name='confirmPassword'
                             autoComplete='new-password'
@@ -121,21 +113,23 @@ const SignUpPage = () => {
                             required
                             id='confirmPassword'
                             className='form-control'
-                            placeholder='Пароли должны совпадать'
+                            placeholder={t('signup.confirm')}
                             value={values.confirmPassword}
                             onChange={handleChange}
-                            isInvalid={errors.confirmPassword}
+                            isInvalid={errors.confirmPassword || existingUser}
                           />
                           <Form.Control.Feedback type='invalid'>
                             {errors.confirmPassword}
+                            {existingUser && t('errors.signup')}
                           </Form.Control.Feedback>
                         </FloatingLabel>
                         <Button
                           variant='outline-primary'
                           type='submit'
                           className='w-100'
+                          disabled={isLoading}
                         >
-                          Зарегистрироваться
+                          {t('signup.submit')}
                         </Button>
                       </Form>
                     )}

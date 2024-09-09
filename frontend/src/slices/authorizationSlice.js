@@ -20,7 +20,6 @@ const authorizationSlice = createSlice({
   initialState,
   reducers: {
     logIn(state, { payload }) {
-      console.log(payload.token);
       state.username = payload.username;
       state.loggedIn = true;
       state.token = payload.token;

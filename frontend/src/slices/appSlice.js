@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { createSlice } from '@reduxjs/toolkit';
+import { defaultChannelId } from '../utils/defaultChannel';
 
 const initialState = {
-  activeChannel: { id: '1', name: 'general', removable: false },
+  activeChannelId: defaultChannelId,
   modalInfo: { type: null, item: null },
 };
 
@@ -10,8 +11,8 @@ const appSlice = createSlice({
   name: 'appControl',
   initialState,
   reducers: {
-    setActiveChannel(state, { payload }) {
-      state.activeChannel = payload;
+    setActiveChannelId(state, { payload }) {
+      state.activeChannelId = payload;
     },
     showModal(state, { payload }) {
       state.modalInfo = payload;
@@ -22,5 +23,5 @@ const appSlice = createSlice({
   },
 });
 
-export const { setActiveChannel, showModal, hideModal } = appSlice.actions;
+export const { setActiveChannelId, showModal, hideModal } = appSlice.actions;
 export default appSlice.reducer;
