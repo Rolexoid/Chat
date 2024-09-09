@@ -61,6 +61,7 @@ const MessageForm = (props) => {
           <p className="m-0">
             <b>
               #
+              {' '}
               {channels.find((channel) => channel.id === activeChannelId)?.name}
             </b>
           </p>

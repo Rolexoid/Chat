@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Formik } from 'formik';
 import {
-  Modal, FormGroup, FormControl, Button, Form,
+  Modal, FormGroup, FormControl, Button, Form, FormLabel,
 } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -52,6 +52,7 @@ const Rename = (props) => {
             <Form onSubmit={handleSubmit}>
               <FormGroup>
                 <FormControl
+                  id="body"
                   ref={inputRef}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -61,6 +62,7 @@ const Rename = (props) => {
                   className="mb-2"
                   isInvalid={errors.body}
                 />
+                <FormLabel className="visually-hidden" htmlFor="body">{t('modals.label')}</FormLabel>
                 <FormControl.Feedback type="invalid">
                   {errors.body}
                 </FormControl.Feedback>

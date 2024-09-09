@@ -30,6 +30,7 @@ export default {
       submit: 'Отправить',
       delete: 'Удалить',
       areYouSure: 'Уверены?',
+      label: 'Имя канала',
     },
     signup: {
       title: 'Регистрация',
