@@ -1,23 +1,24 @@
 /* eslint-disable jsx-quotes */
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Formik } from 'formik';
 import { Button, FloatingLabel, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import logInImage from './logInImage.png';
-import { logIn } from '../slices/authorizationSlice';
+import logInImage from '../public/logInImage.png';
 import { useSignupUserMutation } from '../services/usersApi';
-import { signUpShema } from '../utils/shema';
+import { signUpSchema } from '../utils/schema';
+import { ROUTES } from '../utils/routes';
+import Header from '../components/Header';
+import useAuth from '../hooks/useAuth';
 
 const SignUpPage = () => {
   const [existingUser, setExistingUser] = useState(false);
   const inputRef = useRef();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [signUpUser, { isLoading }] = useSignupUserMutation();
   const { t } = useTranslation();
+  const { logIn } = useAuth();
 
   useEffect(() => {
     inputRef.current.focus();
@@ -25,20 +26,17 @@ const SignUpPage = () => {
 
   const onSubmit = async ({ username, password }) => {
     try {
+      setExistingUser(false);
       const data = await signUpUser({ username, password }).unwrap();
-      localStorage.setItem('userId', JSON.stringify(data));
-      dispatch(logIn(data));
-      navigate('/');
+      logIn(data);
+      navigate(ROUTES.home);
     } catch (err) {
-      if (err.status === 401) {
-        inputRef.current.select();
-        return;
-      }
-      if (err.status === 409) {
+      const { status } = err;
+      if (status === 409) {
         setExistingUser(true);
-        return;
+      } else {
+        toast.error(t('errors.server'));
       }
-      toast.error(t('errors.server'));
       console.error(err);
     }
   };
@@ -46,13 +44,7 @@ const SignUpPage = () => {
   return (
     <div className='h-100'>
       <div className='d-flex flex-column h-100'>
-        <nav className='shadow-sm navbar navbar-expand-lg navbar-light bg-white'>
-          <div className='container'>
-            <a className='navbar-brand' href='/'>
-              Hexlet Chat
-            </a>
-          </div>
-        </nav>
+        <Header />
         <div className='container-fluid h-100'>
           <div className='row justify-content-center align-content-center h-100'>
             <div className='col-12 col-md-8 col-xxl-6'>
@@ -62,7 +54,7 @@ const SignUpPage = () => {
                     <img src={logInImage} alt='Регистрация' />
                   </div>
                   <Formik
-                    validationSchema={signUpShema(t)}
+                    validationSchema={signUpSchema(t)}
                     onSubmit={onSubmit}
                     initialValues={{ username: '', password: '', confirmPassword: '' }}
                   >

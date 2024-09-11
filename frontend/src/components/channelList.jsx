@@ -1,16 +1,17 @@
-import React, { useEffect } from 'react';
-import cn from 'classnames';
+import React, { useEffect, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import MessageForm from './messagesList';
-import { useGetChannelsQuery } from '../services/channelsApi';
+import { useGetChannelsQuery, channelsApi } from '../services/channelsApi';
+import { messagesApi } from '../services/messagesApi.js';
 import { setActiveChannelId, showModal, hideModal } from '../slices/appSlice';
 import getModal from './modals/index.js';
-import socket from '../utils/socket.js';
 import { defaultChannelId } from '../utils/defaultChannel.js';
+import ChannelName from './ChannelName.jsx';
+import SocketContext from '../context/SocketContext.js';
+import { ROUTES } from '../utils/routes';
+import useAuth from '../hooks/useAuth';
 
 const renderModals = ({
   appInfo, channels, onHide,
@@ -25,35 +26,47 @@ const renderModals = ({
 
 const ChannelsForm = () => {
   const {
-    data: channels, refetch, error: getChannelsError, isLoading,
+    data: channels, error: channelError, refetch, isLoading,
   } = useGetChannelsQuery();
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const appInfo = useSelector((state) => state.appControl);
   const { activeChannelId } = appInfo;
   const onHide = () => dispatch(hideModal());
+  const socket = useContext(SocketContext);
+  const { logOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (getChannelsError) {
-      toast.error(t('errors.server'));
-      throw getChannelsError;
+    if (channelError?.status === 401) {
+      logOut();
+      navigate(ROUTES.login);
     }
-  }, [dispatch, getChannelsError, t]);
+  }, [channelError, logOut, navigate, t]);
 
   useEffect(() => {
-    function newChannelFunc() {
-      refetch();
+    function newChannelFunc(newChannel) {
+      dispatch(channelsApi.util.updateQueryData('getChannels', undefined, (draft) => {
+        draft.push(newChannel);
+      }));
     }
 
     function renameChannelFunc(editedChannel) {
-      refetch();
+      dispatch(channelsApi.util.updateQueryData('getChannels', undefined, (draft) => {
+        const filtered = draft.filter(({ id }) => id !== editedChannel.id);
+        filtered.push(editedChannel);
+        return filtered;
+      }));
       if (editedChannel.id === activeChannelId) {
         dispatch(setActiveChannelId(editedChannel.id));
       }
     }
 
     function removeChannelFunc(removedChannel) {
-      refetch();
+      dispatch(channelsApi.util.updateQueryData('getChannels', undefined, (draft) => (
+        draft.filter(({ id }) => id !== removedChannel.id))));
+      dispatch(messagesApi.util.updateQueryData('getMessages', undefined, (draft) => (
+        draft.filter(({ channelId }) => channelId !== removedChannel.id))));
       if (removedChannel.id === activeChannelId) {
         dispatch(setActiveChannelId(defaultChannelId));
       }
@@ -68,49 +81,11 @@ const ChannelsForm = () => {
       socket.off('renameChannel', renameChannelFunc);
       socket.off('removeChannel', removeChannelFunc);
     };
-  }, [activeChannelId, dispatch, refetch]);
+  }, [activeChannelId, dispatch, refetch, socket]);
 
   if (isLoading) {
     return (<p>{t('loading.text')}</p>);
   }
-
-  const setClasses = (cur) => {
-    const channelClasses = cn('w-100', 'rounded-0', 'text-start', {
-      'text-truncate': cur.removable,
-      btn: true,
-      'btn-secondary': cur.id === activeChannelId,
-    });
-    return channelClasses;
-  };
-
-  const renderChannelName = (channel) => (
-    <button
-      type="button"
-      onClick={() => dispatch(setActiveChannelId(channel.id))}
-      className={setClasses(channel)}
-    >
-      <span className="me-1">#</span>
-      {channel.name}
-    </button>
-  );
-
-  const renderNavs = (channel) => (
-    <Dropdown as={ButtonGroup} className="d-flex">
-      {renderChannelName(channel)}
-      <Dropdown.Toggle
-        split
-        className="flex-grow-0"
-        variant={channel.id === activeChannelId ? 'secondary' : 'none'}
-        id="dropdown-split-basic"
-      >
-        <span className="visually-hidden">{t('chat.controlChannel')}</span>
-      </Dropdown.Toggle>
-      <Dropdown.Menu>
-        <Dropdown.Item onClick={() => dispatch(showModal({ type: 'removing', item: channel }))}>{t('chat.remove')}</Dropdown.Item>
-        <Dropdown.Item onClick={() => dispatch(showModal({ type: 'renaming', item: channel }))}>{t('chat.rename')}</Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
-  );
 
   return (
     <div className="container h-100 my-4 overflow-hidden rounded shadow">
@@ -123,13 +98,7 @@ const ChannelsForm = () => {
             </button>
           </div>
           <ul id="channels-box" className="nav flex-column nav-pills nav-fill px-2 mb-3 overflow-auto h-100 d-block">
-            {channels?.map((channel) => (
-              <li className="nav-item w-100" key={channel.id}>
-                {channel.removable
-                  ? renderNavs(channel)
-                  : renderChannelName(channel)}
-              </li>
-            ))}
+            {channels?.map((channel) => (<ChannelName channel={channel} key={channel.id} />))}
           </ul>
         </div>
         <MessageForm activeChannelId={activeChannelId} channels={channels} />

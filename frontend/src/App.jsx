@@ -15,7 +15,7 @@ const PrivateRoute = ({ children }) => {
   return localStorage.getItem('userId') ? (
     children
   ) : (
-    <Navigate to='/login' state={{ from: location }} />
+    <Navigate to={ROUTES.login} state={{ from: location }} />
   );
 };
 

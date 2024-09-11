@@ -14,10 +14,11 @@ const Remove = (props) => {
 
   const onSubmit = async () => {
     try {
-      await removeChannel(currId);
+      await removeChannel(currId).unwrap();
       onHide();
       toast.success(t('toastify.remove'));
     } catch (err) {
+      toast.error(t('errors.server'));
       console.error(err);
     }
   };

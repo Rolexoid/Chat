@@ -11,7 +11,7 @@ const initialData = localStorage.getItem('userId') !== 'undefined'
 
 const initialState = {
   username: initialData ? initialData.username : '',
-  loggedIn: false,
+  loggedIn: !!initialData,
   token: initialData ? initialData.token : '',
 };
 
@@ -19,17 +19,17 @@ const authorizationSlice = createSlice({
   name: 'users',
   initialState,
   reducers: {
-    logIn(state, { payload }) {
+    setlogInUser(state, { payload }) {
       state.username = payload.username;
       state.loggedIn = true;
       state.token = payload.token;
     },
-    logOut(state) {
+    setlogOutUser(state) {
       state.loggedIn = false;
       state.token = null;
     },
   },
 });
 
-export const { logIn, logOut } = authorizationSlice.actions;
+export const { setlogInUser, setlogOutUser } = authorizationSlice.actions;
 export default authorizationSlice.reducer;

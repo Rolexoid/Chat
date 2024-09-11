@@ -1,31 +1,40 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import { Form } from 'react-bootstrap';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
 import { toast } from 'react-toastify';
-import { useGetMessagesQuery, useAddMessageMutation } from '../services/messagesApi';
-import filter from '../utils/filter';
-import socket from '../utils/socket.js';
+import filter from 'leo-profanity';
+import { useGetMessagesQuery, useAddMessageMutation, messagesApi } from '../services/messagesApi';
+import SocketContext from '../context/SocketContext.js';
 
 const MessageForm = (props) => {
   const { activeChannelId, channels } = props;
-  const { data: messages, refetch, error: messageError } = useGetMessagesQuery();
+  const { data: messages, error: messageError, refetch } = useGetMessagesQuery();
   const [addMessage, { isLoading }] = useAddMessageMutation();
   const inputRef = useRef();
   const { t } = useTranslation();
+  const socket = useContext(SocketContext);
+  const dispatch = useDispatch();
+  const messageBoxRef = useRef();
+
+  useEffect(() => {
+    messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+  }, [messages]);
 
   useEffect(() => {
     inputRef.current.focus();
     if (messageError) {
-      toast.error(t('errors.server'));
-      throw messageError;
+      console.error(messageError);
+      toast(t('errors.server'));
     }
   }, [messageError, t]);
 
   useEffect(() => {
-    function newMessageFunc() {
-      refetch();
+    function newMessageFunc(newMessage) {
+      dispatch(messagesApi.util.updateQueryData('getMessages', undefined, (draft) => {
+        draft.push(newMessage);
+      }));
     }
 
     socket.on('newMessage', newMessageFunc);
@@ -33,14 +42,14 @@ const MessageForm = (props) => {
     return () => {
       socket.off('newMessage', newMessageFunc);
     };
-  }, [refetch]);
+  }, [dispatch, refetch, socket]);
 
   const activeMessages = messages?.filter(({ channelId }) => channelId === activeChannelId) || [];
   const { username } = useSelector((state) => state.users);
 
   const onSubmit = async (values, actions) => {
     try {
-      const newMessage = { body: filter(values.body), channelId: activeChannelId, username };
+      const newMessage = { body: filter.clean(values.body), channelId: activeChannelId, username };
       await addMessage(newMessage).unwrap();
       actions.resetForm({
         values: {
@@ -48,7 +57,6 @@ const MessageForm = (props) => {
         },
       });
     } catch (err) {
-      console.log('seterror');
       toast.error(t('errors.server'));
       console.error(err);
     }
@@ -69,7 +77,7 @@ const MessageForm = (props) => {
             {t('chat.messages.count', { count: activeMessages.length })}
           </span>
         </div>
-        <div id="messages-box" className="chat-messages overflow-auto px-5">
+        <div id="messages-box" className="chat-messages overflow-auto px-5" ref={messageBoxRef}>
           {messages?.filter(({ channelId }) => channelId === activeChannelId).map((message) => (
             <div className="text-break mb-2" key={message.id}>
               <b>{message.username}</b>
@@ -101,7 +109,7 @@ const MessageForm = (props) => {
                   <button
                     type="submit"
                     className="btn btn-group-vertical"
-                    disabled={isLoading || values.body.replaceAll(' ', '').length === 0}
+                    disabled={isLoading || values.body.trim().length === 0}
                   >
                     {t('chat.submit')}
                   </button>

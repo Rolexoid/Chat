@@ -5,9 +5,9 @@ import {
 } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import filter from 'leo-profanity';
 import { useEditChannelMutation } from '../../services/channelsApi';
-import { newChannelShema } from '../../utils/shema';
-import filter from '../../utils/filter';
+import { newChannelSchema } from '../../utils/schema';
 
 const Rename = (props) => {
   const { channels, onHide, modalInfo } = props;
@@ -17,10 +17,11 @@ const Rename = (props) => {
   const onSubmit = async (values) => {
     const currId = modalInfo.item.id;
     try {
-      await editChannel({ id: currId, body: { name: filter(values.body) } });
+      await editChannel({ id: currId, body: { name: filter.clean(values.body) } }).unwrap();
       onHide();
       toast.success(t('toastify.rename'));
     } catch (err) {
+      toast.error(t('errors.server'));
       console.error(err);
     }
   };
@@ -40,7 +41,7 @@ const Rename = (props) => {
 
       <Modal.Body>
         <Formik
-          validationSchema={newChannelShema(t, names)}
+          validationSchema={newChannelSchema(t, names)}
           onSubmit={onSubmit}
           initialValues={{ body: modalInfo.item.name }}
           validateOnChange={false}

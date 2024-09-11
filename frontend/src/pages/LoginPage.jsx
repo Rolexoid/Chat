@@ -1,21 +1,23 @@
 /* eslint-disable jsx-quotes */
-import React, { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useRef, useState } from 'react';
 import { Formik } from 'formik';
 import { Button, FloatingLabel, Form } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { logIn } from '../slices/authorizationSlice';
 import { useLoginUserMutation } from '../services/usersApi';
-import logInImage from './logInImage.png';
+import logInImage from '../public/logInImage.png';
+import { ROUTES } from '../utils/routes';
+import Header from '../components/Header';
+import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
-  const [loginUser, { isLoading, error }] = useLoginUserMutation();
+  const [unfoundUser, setUnfoundUser] = useState(false);
+  const [loginUser, { isLoading }] = useLoginUserMutation();
   const inputRef = useRef();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
+  const { logIn } = useAuth();
 
   useEffect(() => {
     inputRef.current.focus();
@@ -23,16 +25,18 @@ const LoginPage = () => {
 
   const onSubmit = async ({ username, password }) => {
     try {
+      setUnfoundUser(false);
       const data = await loginUser({ username, password }).unwrap();
-      localStorage.setItem('userId', JSON.stringify(data));
-      dispatch(logIn(data));
-      navigate('/');
+      logIn(data);
+      navigate(ROUTES.home);
     } catch (err) {
       if (err.status === 401) {
+        setUnfoundUser(true);
         inputRef.current.select();
+        console.error(err);
         return;
       }
-      toast.error('Ошибка соединения');
+      toast.error(t('errors.server'));
       console.error(err);
     }
   };
@@ -40,13 +44,7 @@ const LoginPage = () => {
   return (
     <div className='h-100'>
       <div className='d-flex flex-column h-100'>
-        <nav className='shadow-sm navbar navbar-expand-lg navbar-light bg-white'>
-          <div className='container'>
-            <a className='navbar-brand' href='/'>
-              Hexlet Chat
-            </a>
-          </div>
-        </nav>
+        <Header />
         <div className='container-fluid h-100'>
           <div className='row justify-content-center align-content-center h-100'>
             <div className='col-12 col-md-8 col-xxl-6'>
@@ -70,7 +68,7 @@ const LoginPage = () => {
                             placeholder={t('login.username')}
                             onChange={handleChange}
                             value={values.username}
-                            isInvalid={error?.status === 401}
+                            isInvalid={unfoundUser}
                             ref={inputRef}
                           />
                         </FloatingLabel>
@@ -84,10 +82,10 @@ const LoginPage = () => {
                             placeholder={t('login.password')}
                             value={values.password}
                             onChange={handleChange}
-                            isInvalid={error?.status === 401}
+                            isInvalid={unfoundUser}
                           />
                           <Form.Control.Feedback type='invalid'>
-                            {error?.status === 401 && t('errors.login')}
+                            {unfoundUser && t('errors.login')}
                           </Form.Control.Feedback>
                         </FloatingLabel>
                         <Button
@@ -105,7 +103,7 @@ const LoginPage = () => {
                 <div className='card-footer p-4'>
                   <div className='text-center'>
                     <span>{t('login.newUser')}</span>
-                    <a href='/signup'>{t('login.signUpHref')}</a>
+                    <Link to={ROUTES.signUp}>{t('login.signUpHref')}</Link>
                   </div>
                 </div>
               </div>

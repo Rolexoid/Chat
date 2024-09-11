@@ -6,9 +6,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
+import filter from 'leo-profanity';
 import { useAddChannelMutation } from '../../services/channelsApi';
-import { newChannelShema } from '../../utils/shema';
-import filter from '../../utils/filter';
+import { newChannelSchema } from '../../utils/schema';
 import { setActiveChannelId } from '../../slices/appSlice';
 
 const Add = (props) => {
@@ -19,11 +19,12 @@ const Add = (props) => {
 
   const onSubmit = async (values) => {
     try {
-      const response = await addChannel({ name: filter(values.body) });
+      const response = await addChannel({ name: filter.clean(values.body) }).unwrap();
       onHide();
       toast.success(t('toastify.add'));
-      dispatch(setActiveChannelId(response.data.id));
+      dispatch(setActiveChannelId(response.id));
     } catch (err) {
+      toast.error(t('errors.server'));
       console.error(err);
     }
   };
@@ -43,7 +44,7 @@ const Add = (props) => {
 
       <Modal.Body>
         <Formik
-          validationSchema={newChannelShema(t, names)}
+          validationSchema={newChannelSchema(t, names)}
           onSubmit={onSubmit}
           initialValues={{ body: '' }}
           validateOnChange={false}
